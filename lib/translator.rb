@@ -2,35 +2,42 @@
 require 'yaml'
 require 'pry'
 
-def load_library(path)
-  emoticons = YAML.load_file(path)
-  emoticon_hash = Hash.new
-
-  emoticon_hash["get_emoticon"] = Hash.new
-  emoticon_hash["get_meaning"] = Hash.new
-
-  emoticons.each do |english_word, emoticon_set|
-    emoticon_hash["get_emoticon"][emoticon_set.first] = emoticon_set.last
-    emoticon_hash["get_meaning"][emoticon_set.last] = english_word
+def load_library(yaml_file)
+  response = {"get_meaning" => {}, "get_emoticon" => {}}
+  library = YAML.load_file(yaml_file)
+  library.each do |trans, emos|
+    response["get_meaning"][emos[1]] = trans
+    response["get_emoticon"][emos[0]] = emos[1]
   end
-  emoticon_hash
-  binding.pry
+  response
 end
 
-def get_japanese_emoticon(path, emoticon)
-  emoticon_hash = load_library(path)
-  result = emoticon_hash["get_emoticon"][emoticon]
-  if result == nil
-    result = "Sorry, that emoticon was not found" 
+def get_japanese_emoticon(yaml_file, emoticon)
+  library = load_library(yaml_file)
+  response = nil
+  library["get_emoticon"].each do |english, japanese|
+    if emoticon == english
+      response = japanese
+    end
   end
-  result
+  if response == nil
+    return "Sorry, that emoticon was not found"
+  else
+    return response
+  end
 end
 
-def get_english_meaning(path, emoticon)
-  emoticon_hash = load_library(path)
-  result = emoticon_hash["get_meaning"][emoticon]
-  if result == nil
-    result = "Sorry, that emoticon was not found" 
+def get_english_meaning(yaml_file, emoticon)
+  library = load_library(yaml_file)
+  response = nil
+  library["get_meaning"].each do |emo, trans|
+    if emo == emoticon
+      response = trans
+    end
   end
-  result
+  if response == nil
+    return "Sorry, that emoticon was not found"
+  else
+    return response
+  end
 end
